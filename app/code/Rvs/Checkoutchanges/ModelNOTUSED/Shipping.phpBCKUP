@@ -1,0 +1,112 @@
+<?php
+
+namespace Rvs\Checkoutchanges\Model;
+
+class Shipping extends \Magento\Shipping\Model\Shipping {
+
+    /**
+     * @param string $carrierCode
+     * @param \Magento\Quote\Model\Quote\Address\RateRequest $request
+     * @return $this|\Magento\Shipping\Model\Shipping
+     */
+    public function collectCarrierRates($carrierCode, $request)
+    {
+        /* @var $carrier \Magento\Shipping\Model\Carrier\AbstractCarrier */
+        $carrier = $this->_carrierFactory->createIfActive($carrierCode, $request->getStoreId());
+        if (!$carrier) {
+            return $this;
+        }
+        /**-------- Custom logic starts here --------**/
+        $writer = new \Zend\Log\Writer\Stream(BP . '/var/log/custom.log');
+        $logger = new \Zend\Log\Logger();
+        $logger->addWriter($writer);
+
+        $restrictionFlag=0;
+        $productAttributeValues = array();
+        $shippWithCC = ['1'];
+        $request->getAllItems();
+        foreach ($request->getAllItems() as $item) {
+            if ($item->getProduct()->getData('include_in_click_collect') || !empty($item->getProduct()->getData('include_in_click_collect'))) {
+                $productAttributeValues[$item->getSku()]=$item->getProduct()->getData('include_in_click_collect');
+            } else {
+                $productAttributeValues[$item->getSku()]=0;
+            }
+            // $logger->info(print_r('carrier: '.$carrierCode, true));
+        }
+        $restrictionFlag = (count(array_intersect($productAttributeValues, $shippWithCC))) ? 'restrict' : 'notrestrict';
+        
+        if('restrict' === $restrictionFlag && $carrierCode == 'amstorepick' ) {
+            return $this;
+        } elseif ('restrict' === $restrictionFlag && $carrierCode != 'amstorepick') {
+            return false;
+        } else {
+            return false;            
+        }
+
+         /**-------- Custom logic ends here --------**/
+
+        $carrier->setActiveFlag($this->_availabilityConfigField);
+            $logger->info(print_r('SKU: ', true));
+        $result = $carrier->checkAvailableShipCountries($request);
+        if (false !== $result && !$result instanceof \Magento\Quote\Model\Quote\Address\RateResult\Error) {
+            $result = $carrier->processAdditionalValidation($request);
+        }
+        /*
+         * Result will be false if the admin set not to show the shipping module
+         * if the delivery country is not within specific countries
+         */
+        if (false !== $result) {
+            if (!$result instanceof \Magento\Quote\Model\Quote\Address\RateResult\Error) {
+                if ($carrier->getConfigData('shipment_requesttype')) {
+                    $packages = $this->composePackagesForCarrier($carrier, $request);
+                    if (!empty($packages)) {
+                        $sumResults = [];
+                        foreach ($packages as $weight => $packageCount) {
+                            $request->setPackageWeight($weight);
+                            $result = $carrier->collectRates($request);
+                            if (!$result) {
+                                return $this;
+                            } else {
+                                $result->updateRatePrice($packageCount);
+                            }
+                            $sumResults[] = $result;
+                        }
+                        if (!empty($sumResults) && count($sumResults) > 1) {
+                            $result = [];
+                            foreach ($sumResults as $res) {
+                                if (empty($result)) {
+                                    $result = $res;
+                                    continue;
+                                }
+                                foreach ($res->getAllRates() as $method) {
+                                    foreach ($result->getAllRates() as $resultMethod) {
+                                        if ($method->getMethod() == $resultMethod->getMethod()) {
+                                            $resultMethod->setPrice($method->getPrice() + $resultMethod->getPrice());
+                                            continue;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        $result = $carrier->collectRates($request);
+                    }
+                } else {
+                    $result = $carrier->collectRates($request);
+                }
+                if (!$result) {
+                    return $this;
+                }
+            }
+            if ($carrier->getConfigData('showmethod') == 0 && $result->getError()) {
+                return $this;
+            }
+            // sort rates by price
+            if (method_exists($result, 'sortRatesByPrice') && is_callable([$result, 'sortRatesByPrice'])) {
+                $result->sortRatesByPrice();
+            }
+            $this->getResult()->append($result);
+        }
+        return $this;
+    }
+}

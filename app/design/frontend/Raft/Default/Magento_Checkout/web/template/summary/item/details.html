@@ -1,0 +1,79 @@
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+
+<div class="product-item-details" style="padding-left: 0;">
+
+    <div class="product-item-inner">
+        <div class="product-item-name-block">
+            <strong class="product-item-name" data-bind="html: getNameUnsanitizedHtml($parent)"></strong>
+        </div>        
+    </div>
+
+    <div class="prod-img">
+        <!-- ko foreach: getRegion('before_details') -->
+            <!-- ko template: getTemplate() --><!-- /ko -->
+        <!-- /ko -->
+    </div>
+    
+    <!-- ko if: (getItemlead_time($parent))-->
+        <div class="cstm-product-lead-time" style="display:none;">
+            <span class="cstm-text"><strong>Delivery:</strong> Handmade to order and delivered in:</span>
+            <span class="product_lead_time" data-bind="text: getItemlead_time($parent)"></span>
+        </div>
+    <!-- /ko -->
+
+    <!-- ko if: (JSON.parse($parent.options).length > 0)-->
+    <!-- <div class="product options" data-bind="mageInit: {'collapsible':{'openedState': 'active'}}"> -->
+    <div class="product-options">
+        <div data-role="content" class="content">
+            <dl class="item-options">
+                <!--ko foreach: JSON.parse($parent.options)-->
+                <dt class="label" data-bind="text: label" style="font-size: 14px"></dt>
+                    <!-- ko if: ($data.full_view)-->
+                    <!-- ko with: {full_viewUnsanitizedHtml: $data.full_view}-->
+                    <dd class="values" data-bind="html: full_viewUnsanitizedHtml" style="font-size: 14px"></dd>
+                    <!-- /ko -->
+                    <!-- /ko -->
+                    <!-- ko ifnot: ($data.full_view)-->
+                    <!-- ko with: {valueUnsanitizedHtml: $data.value}-->
+                    <dd class="values" data-bind="html: valueUnsanitizedHtml" style="font-size: 14px"></dd>
+                    <!-- /ko -->
+                    <!-- /ko -->
+                <!-- /ko -->
+            </dl>
+            <!-- <div><span class="product-item-new" data-bind="text: getItemLeadTime($parent)"></span></div> -->
+        </div>
+    </div>
+    <!-- /ko -->
+
+    <div class="qty-price">
+        <div class="details-qty-cstm" style="display: inline-block; width: 82%;">
+            <span class="label" style="font-weight: 500;"><!-- ko i18n: 'Qty: ' --><!-- /ko --></span>
+            <span class="value" data-bind="text: $parent.qty"></span>
+
+            <span class="primary">
+                <a href="" data-bind="attr: {href: getConfigUrl($parent.item_id),title: $t('Edit item')}" class="action edit">
+                    <span data-bind="i18n: 'Edit'"></span>
+                </a>
+            </span>
+            <span class="secondary">
+                <a href="#" data-bind="attr: {'data-post': getDataPost($parent.item_id),title: $t('Delete item')}" class="action delete">
+                    <span data-bind="i18n: 'Remove'"></span>
+                </a>
+            </span>
+        </div>
+
+        <div class="subtotal-cstm" style="display: inline-block; text-align: right; width: 17%;">
+            <!-- ko foreach: getRegion('after_details') -->
+                <!-- ko template: getTemplate() --><!-- /ko -->
+            <!-- /ko -->
+        </div>
+    </div>
+</div>
+<!-- ko foreach: getRegion('item_message') -->
+    <!-- ko template: getTemplate() --><!-- /ko -->
+<!-- /ko -->

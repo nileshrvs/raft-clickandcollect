@@ -1,0 +1,49 @@
+<?php
+
+namespace Rvs\Checkoutchanges\Plugin;
+
+class ConfigProviderPlugin extends \Magento\Framework\Model\AbstractModel
+{
+    protected $quoteRepository;
+
+    public function __construct(
+        \Magento\Quote\Model\QuoteRepository $quoteRepository
+    ) {
+        $this->quoteRepository = $quoteRepository;
+    }
+
+
+    public function afterGetConfig(\Magento\Checkout\Model\DefaultConfigProvider $subject, array $result)
+    {
+        $writer = new \Zend\Log\Writer\Stream(BP . '/var/log/custom.log');
+        $logger = new \Zend\Log\Logger();
+        $logger->addWriter($writer);
+
+        $items = $result['totalsData']['items'];
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+
+        $cart = $objectManager->get('\Magento\Checkout\Model\Cart'); 
+
+        $itemsCollection = $cart->getQuote()->getItemsCollection();
+
+        $itemsVisible = $cart->getQuote()->getAllVisibleItems();
+
+        $items = $cart->getQuote()->getAllItems();
+
+        foreach($items as $item) {
+
+
+        }
+
+
+
+
+
+
+        //     $items[$i]['lead_time'] = $product_lead_time;
+        
+        // $result['totalsData']['items'] = $items;
+        return $result;
+    }
+
+}

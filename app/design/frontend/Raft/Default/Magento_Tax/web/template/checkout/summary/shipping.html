@@ -1,0 +1,105 @@
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<!-- ko if: quoteIsVirtual == 0 -->
+    <!-- ko if: isBothPricesDisplayed() -->
+    <tr class="totals shipping excl">
+        <th class="mark" scope="row">
+            <span class="label" data-bind="text: title+ ' ' + excludingTaxMessage"></span>
+            <!-- ko if: haveToShowCoupon() -->
+                <span class="label description" data-bind="text: getCouponDescription()"></span>
+            <!-- /ko -->
+            <span class="value" data-bind="text: getShippingMethodTitle()"></span>
+        </th>
+        <td class="amount">
+            <!-- ko if: isCalculated() -->
+            <span class="price"
+                  data-bind="text: getExcludingValue(), attr: {'data-th': excludingTaxMessage}"></span>
+            <!-- /ko -->
+            <!-- ko ifnot: isCalculated() -->
+            <span class="not-calculated"
+                  data-bind="text: getExcludingValue(), attr: {'data-th': excludingTaxMessage}"></span>
+            <!-- /ko -->
+        </td>
+    </tr>
+    <tr class="totals shipping incl">
+        <th class="mark" scope="row">
+            <span class="label" data-bind="text: title + ' ' + includingTaxMessage"></span>
+            <!-- ko if: haveToShowCoupon() -->
+                <span class="label description" data-bind="text: getCouponDescription()"></span>
+            <!-- /ko -->
+            <span class="value" data-bind="text: getShippingMethodTitle()"></span>
+        </th>
+        <td class="amount">
+            <!-- ko if: isCalculated() -->
+            <span class="price"
+                  data-bind="text: getIncludingValue(), attr: {'data-th': title + ' ' + excludingTaxMessage}"></span>
+            <!-- /ko -->
+            <!-- ko ifnot: isCalculated() -->
+            <span class="not-calculated"
+                  data-bind="text: getIncludingValue(), attr: {'data-th': title + ' ' + excludingTaxMessage}"></span>
+            <!-- /ko -->
+        </td>
+    </tr>
+    <!-- /ko -->
+    <!-- ko if: isIncludingDisplayed() -->
+    <tr class="totals shipping incl">
+        <th class="mark" scope="row">
+            <span class="label" data-bind="i18n: title"></span>
+            <!-- ko if: haveToShowCoupon() -->
+                <span class="label description" data-bind="text: getCouponDescription()"></span>
+            <!-- /ko -->
+            <span class="value" data-bind="text: getShippingMethodTitle()"></span>
+        </th>
+        <td class="amount">
+            <!-- ko if: isCalculated() -->
+            <span class="price"
+                  data-bind="text: getIncludingValue(), attr: {'data-th': title}"></span>
+            <!-- /ko -->
+            <!-- ko ifnot: isCalculated() -->
+            <span class="not-calculated"
+                  data-bind="text: getIncludingValue(), attr: {'data-th': title}"></span>
+            <!-- /ko -->
+        </td>
+    </tr>
+    <!-- /ko -->
+    <!-- ko if: isExcludingDisplayed() -->
+    <tr class="totals shipping excl">
+        <th class="mark" scope="row">
+            <span class="label" data-bind="i18n: title"></span>
+            <!-- ko if: haveToShowCoupon() -->
+                <span class="label description" data-bind="text: getCouponDescription()"></span>
+            <!-- /ko -->
+            <span class="value" data-bind="text: getShippingMethodTitle()"></span>
+        </th>
+        <td class="amount">
+            <!-- ko if: isCalculated() -->
+            <span class="price"
+                  data-bind="text: getValue(), attr: {'data-th': title}"></span>
+            <!-- /ko -->
+            <!-- ko ifnot: isCalculated() -->
+            <span class="not-calculated"
+                  data-bind="text: getValue(), attr: {'data-th': title}"></span>
+            <!-- /ko -->
+        </td>
+    </tr>
+    <!-- /ko -->
+    <tr class="cstm-clone-lead-time-summary">
+        <td class="one"></td>
+    </tr>
+    <tr class="store-timing-sidebar" style="display: none;">
+        <td class="one"  style="float:left;">
+            <span class="one">Available for collection from: </span>
+            <span class="two"></span>
+        </td>
+        <td class="two"  style="float:left;">
+            <span class="title"><strong>Opening Hours:</strong></span><br>
+            <span class="one" style="float:left;"><strong>Monday - Saturday:</strong> 9:30 - 18:00 </span>
+            <span class="two" style="float:left;"><strong>Sunday:</strong> 11:00 - 17:00 </span>
+            <span class="three" style="float:left;"><strong>Bank Holidays:</strong> 9:30 - 18:00 </span>
+        </td>
+    </tr>
+<!-- /ko -->
