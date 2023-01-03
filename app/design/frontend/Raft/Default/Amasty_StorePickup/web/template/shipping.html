@@ -1,0 +1,278 @@
+<!--
+/**
+ * Copyright © 2015 Magento. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<!-- <li id="shipping" class="checkout-shipping-address" data-bind="fadeVisible: visible()"> -->
+<li id="shipping" class="checkout-shipping-address">
+    <div class="step-title" data-bind="i18n: 'Shipping Address'" data-role="title"></div>
+    <div id="checkout-step-shipping"
+         class="step-content"
+         data-role="content">
+
+        <!-- ko if: (!quoteIsVirtual) -->
+            <!-- ko foreach: getRegion('customer-email') -->
+                <!-- ko template: getTemplate() --><!-- /ko -->
+            <!--/ko-->
+        <!--/ko-->
+
+        <!-- ko foreach: getRegion('address-list') -->
+        <!-- ko template: getTemplate() --><!-- /ko -->
+        <!--/ko-->
+
+        <!-- ko foreach: getRegion('address-list-additional-addresses') -->
+        <!-- ko template: getTemplate() --><!-- /ko -->
+        <!--/ko-->
+
+        <!-- Address form pop up -->
+        <!-- ko if: (!isFormInline) -->
+        <button type="button"
+                data-bind="click: showFormPopUp, visible: !isNewAddressAdded()"
+                class="action action-show-popup">
+            <span data-bind="i18n: 'New Address'"></span></button>
+        <div id="opc-new-shipping-address" data-bind="visible: isFormPopUpVisible()">
+            <!-- ko template: 'Magento_Checkout/shipping-address/form' --><!-- /ko -->
+        </div>
+        <!-- /ko -->
+
+        <!-- ko foreach: getRegion('before-form') -->
+        <!-- ko template: getTemplate() --><!-- /ko -->
+        <!--/ko-->
+
+        <!-- Inline address form -->
+        <!-- ko if: (isFormInline) -->
+        <!-- ko template: 'Magento_Checkout/shipping-address/form' --><!-- /ko -->
+        <!-- /ko -->
+    </div>
+</li>
+
+<!-- Custom continue button only for mobile view -->
+<li class="cstm-error-msg-req">Please enter all the required details.</li>
+<li class="cstm-next-step1-mobile">
+    <button type="button" disabled>
+        <span class="cstm-button">Continue to shipment</span>
+    </button>    
+</li>
+<li class="cstm-edit-address">
+    <button type="button" disabled>
+        <span class="cstm-button">Edit Shipping Address</span>
+    </button>    
+</li>
+
+<!-- custom shipping buttons start -->
+<li id="shipping-type-buttons-cstm">
+    <each args="getRegion('shipping-type-buttons')" render="" />
+</li>
+<!-- custom shipping buttons end -->
+
+<!--Shipping method template-->
+<li id="opc-shipping_method"
+    class="checkout-shipping-method"
+    data-bind="blockLoader: isLoading"
+    role="presentation">
+    <div class="checkout-shipping-method">
+        <div class="step-title" data-bind="i18n: 'Delivery Options'" data-role="title">Delivery Options</div>
+        <!-- ko foreach: getRegion('before-shipping-method-form') -->
+        <!-- ko template: getTemplate() --><!-- /ko -->
+        <!-- /ko -->
+        <div id="checkout-step-shipping_method"
+             class="step-content"
+             data-role="content"
+             role="tabpanel"
+             aria-hidden="false">
+            <!-- ko if: rates().length  -->
+            <form class="form methods-shipping" id="co-shipping-method-form" data-bind="submit: setShippingInformation" novalidate="novalidate">
+                <div id="checkout-shipping-method-load">
+                    <div class="table-checkout-shipping-method">
+                        <!-- <thead>
+                            <tr class="row" >
+                                <th class="col col-method" data-bind="i18n: 'Select Method'"></th>
+                                <th class="col col-price" data-bind="i18n: 'Price'"></th>
+                                <th class="col col-method" data-bind="i18n: 'Method Title'"></th>
+                                <th class="col col-carrier" data-bind="i18n: 'Carrier Title'"></th>
+                            </tr>
+                        </thead> -->
+                        <!-- <tbody> -->
+
+                        <!--ko foreach: { data: rates(), as: 'method'}-->
+                        <!-- ko if: method.carrier_code == 'amstorepick' -->
+                            <ul class="row cstm-ul" data-bind="click: $parent.selectShippingMethod">
+                                <li data-bind="attr: {'class': 'li_' + method.method_code}">
+                                    <span class="col col-method" data-bind="attr: {'cstm_class': 'radiobtn_' + method.carrier_code, 'cstm_method': method.method_code}">
+                                        <!-- ko ifnot: method.error_message -->
+                                        <!-- ko if: $parent.rates().length == 1 -->
+                                        <input name="shipping_method"
+                                            class="radio"
+                                            type="radio"
+                                            data-bind="attr: {
+                                                            checked: $parent.rates().length == 1,
+                                                            'value' : method.carrier_code + '_' + method.method_code,
+                                                            'id': 's_method_' + method.method_code,
+                                                            'aria-labelledby': 'label_method_' + method.method_code + '_' + method.carrier_code + ' ' + 'label_carrier_' + method.method_code + '_' + method.carrier_code
+                                                        }" />
+                                        <!-- /ko -->
+                                        <!--ko ifnot: ($parent.rates().length == 1)-->
+                                        <input name="shipping_method" type="radio"
+                                            data-bind="
+                                                        value: method.carrier_code + '_' + method.method_code,
+                                                        checked: $parent.isSelected,
+                                                        attr: {
+                                                            'id': 's_method_' + method.carrier_code + '_' + method.method_code,
+                                                            'aria-labelledby': 'label_method_' + method.method_code + '_' + method.carrier_code + ' ' + 'label_carrier_' + method.method_code + '_' + method.carrier_code
+                                                        },
+                                                        click: $parent.selectShippingMethod"
+                                            class="radio"/>
+                                        <!--/ko-->
+                                        <!-- /ko -->
+                                    </span>
+                                    
+                                    <span class="cstm-shipping-section">
+                                        <span class="col col-method"
+                                        data-bind="
+                                                text: method.method_title, 
+                                                attr: {
+                                                    'id': 'label_method_' + method.method_code + '_' + method.carrier_code,
+                                                    'cstm_class': 'method_' + method.carrier_code, 'cstm_method': method.method_code
+                                                }">
+                                        </span><br>
+                                        <!-- ko if:  method.extension_attributes -->
+                                            <!-- ko if: method.extension_attributes.amstorepick_comment -->
+                                                <span class="row cstm-class-applied">
+                                                    <span class="col"
+                                                        data-bind="html: method.extension_attributes.amstorepick_comment" class="storepick_comment">
+                                                    </span><br>
+                                                    <span class="cstm-available-collection">
+                                                        <span class="one" data-bind="attr: { 'id': 'one_'+method.method_code }" style="display:none;">Available for collection from: </span>
+                                                        <span class="two" data-bind="attr: { 'id': 'two_'+method.method_code }" style="display:none;" ></span>
+                                                    </span>
+                                                </span>
+                                            <!-- /ko -->
+                                        <!-- /ko -->
+                                    </span>        
+                                </li>
+                                <!-- ko if:  method.error_message -->
+                                    <li class="row row-error">
+                                        <span class="col col-error" colspan="4">
+                                            <div class="message error">
+                                                <div data-bind="text: method.error_message"></div>
+                                            </div>
+                                            <span class="no-display">
+                                                <input name="shipping_method" type="radio" data-bind="attr: {'value' : method.method_code, 'id': 's_method_' + method.method_code}"/>
+                                            </span>
+                                        </span>
+                                    </li>
+                                <!-- /ko -->
+                            </ul>
+                        <!-- /ko -->
+                        
+                        <!-- ko if: method.carrier_code != 'amstorepick' -->
+                            <ul class="row" data-bind="click: $parent.selectShippingMethod">
+                                <li>
+                                    <span class="col col-method" data-bind="attr: {'cstm_class': 'radiobtn_' + method.carrier_code, 'cstm_method': method.method_code}">
+                                        <!-- ko ifnot: method.error_message -->
+                                        <!-- ko if: $parent.rates().length == 1 -->
+                                        <input name="shipping_method" type="radio"
+                                            data-bind="
+                                                        value: method.carrier_code + '_' + method.method_code,
+                                                        checked: $parent.isSelected,
+                                                        attr: {
+                                                            'id': 's_method_' + method.carrier_code + '_' + method.method_code,
+                                                            'aria-labelledby': 'label_method_' + method.method_code + '_' + method.carrier_code + ' ' + 'label_carrier_' + method.method_code + '_' + method.carrier_code
+                                                        },
+                                                        click: $parent.selectShippingMethod"
+                                            class="radio"/>
+                                        <!-- <input name="shipping_method"
+                                            class="radio"
+                                            type="radio"
+                                            data-bind="attr: {
+                                                            checked: $parent.rates().length == 1,
+                                                            'value' : method.carrier_code + '_' + method.method_code,
+                                                            'id': 's_method_' + method.method_code,
+                                                            'aria-labelledby': 'label_method_' + method.method_code + '_' + method.carrier_code + ' ' + 'label_carrier_' + method.method_code + '_' + method.carrier_code
+                                                        }" /> -->
+                                        <!-- /ko -->
+                                        <!--ko ifnot: ($parent.rates().length == 1)-->
+                                        <input name="shipping_method" type="radio"
+                                            data-bind="
+                                                        value: method.carrier_code + '_' + method.method_code,
+                                                        checked: $parent.isSelected,
+                                                        attr: {
+                                                            'id': 's_method_' + method.carrier_code + '_' + method.method_code,
+                                                            'aria-labelledby': 'label_method_' + method.method_code + '_' + method.carrier_code + ' ' + 'label_carrier_' + method.method_code + '_' + method.carrier_code
+                                                        },
+                                                        click: $parent.selectShippingMethod"
+                                            class="radio"/>
+                                        <!--/ko-->
+                                        <!-- /ko -->
+                                    </span>
+                                    <span class="col col-price" data-bind="attr: {'cstm_class': 'price_' + method.carrier_code, 'cstm_method': method.method_code}">
+                                        <!-- ko foreach: $parent.getRegion('price') -->
+                                        <!-- ko template: getTemplate() --><!-- /ko -->
+                                        <!-- /ko -->
+                                    </span>
+
+                                    <span class="col col-method"
+                                            data-bind="
+                                                text: method.method_title, 
+                                                attr: {
+                                                    'id': 'label_method_' + method.method_code + '_' + method.carrier_code,
+                                                    'cstm_class': 'method_' + method.carrier_code, 'cstm_method': method.method_code
+                                                }" style="display: none;" >
+                                    </span>
+
+
+                                    <span class="col col-carrier"
+                                            data-bind="
+                                                text: method.carrier_title, 
+                                                attr: {
+                                                    'id': 'label_carrier_' + method.method_code + '_' + method.carrier_code,
+                                                    'cstm_class': 'carrier_' + method.carrier_code, 'cstm_method': method.method_code
+                                                }">
+                                    </span>
+                                    <span class="cstm-clone-lead-time-delivery">
+                                        <span class="one"></td>
+                                    </span>
+                                </li>
+                            </ul>
+                        <!-- /ko -->
+                        
+
+                        
+
+                        <!-- /ko -->
+                        <!-- </tbody> -->
+                    </div>
+                </div>
+
+                <div id="onepage-checkout-shipping-method-additional-load">
+                    <!-- ko foreach: getRegion('shippingAdditional') -->
+                    <!-- ko template: getTemplate() --><!-- /ko -->
+                    <!-- /ko -->
+                </div>
+                <!-- ko if: errorValidationMessage().length > 0 -->
+                <div class="message notice">
+                    <span><!-- ko text: errorValidationMessage()--><!-- /ko --></span>
+                </div>
+                <!-- /ko -->
+                <div class="actions-toolbar" id="shipping-method-buttons-container">
+                    <div class="primary">
+                        <button data-role="opc-continue" type="submit" class="button action continue primary">
+                            <span style="display: none;"><!-- ko i18n: 'Next'--><!-- /ko --></span>
+                            <span><!-- ko i18n: 'Continue to Payment'--><!-- /ko --></span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <!-- /ko -->
+            <!-- ko ifnot: rates().length > 0 --><div class="no-quotes-block"><!-- ko i18n: 'Sorry, no quotes are available for this order at this time'--><!-- /ko --></div><!-- /ko -->
+        </div>
+    </div>
+</li>
+
+<li class="cstm-change-delivery-option">
+    <button type="button" disabled>
+        <span class="cstm-button">Change Previous option</span>
+    </button>    
+</li>
+

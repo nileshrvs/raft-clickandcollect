@@ -1,0 +1,27 @@
+require([
+  'jquery',
+  'Magento_Checkout/js/model/full-screen-loader',
+  'mage/cookies',
+  'jquery/ui',
+  "Magento_Customer/js/customer-data"
+], function($,fullScreenLoader,cookies,customerData){
+
+  
+    $( window ).on("load", function() {
+      
+      // setTimeout(function () {
+        $("#checkout-shipping-method-load tbody tr.row").click(function() {
+          alert("clicked");
+          $('.button.action.continue.primary').trigger('click');
+        });
+      // }, 2000);
+
+      function scrollToTop() {
+        $(window).scrollTop(0);
+      }
+      scrollToTop();
+
+    });
+
+    $(window).scrollTop(0);
+ });

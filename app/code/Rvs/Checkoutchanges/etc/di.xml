@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../../lib/internal/Magento/Framework/ObjectManager/etc/config.xsd">
+    <type name="Magento\Quote\Api\ShipmentEstimationInterface">
+    <!-- show/hide amasty store pickup & other methods -->
+        <plugin name="shipping_method_restrict" type="Rvs\Checkoutchanges\Plugin\RestrictshippingPlugin" />
+    </type>
+
+    <type name="Magento\Checkout\Model\DefaultConfigProvider">
+        <plugin name="AddAttPlug" type="Rvs\Checkoutchanges\Plugin\ConfigProviderPlugin" />
+    </type>
+
+</config>

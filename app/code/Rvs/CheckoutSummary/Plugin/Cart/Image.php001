@@ -1,0 +1,88 @@
+<?php
+
+namespace Rvs\CheckoutSummary\Plugin\Cart;
+
+use Magento\Checkout\Model\Session;
+
+class Image
+{
+    public function __construct(
+        Session $session
+        ){
+        $this->_session = $session;
+    }
+    public function afterGetImage($item, $result)
+    {
+        // $cart_items = $this->_session->getQuote()->getItems();
+        
+        $writer = new \Zend\Log\Writer\Stream(BP . '/var/log/custom.log');
+        $logger = new \Zend\Log\Logger();
+        $logger->addWriter($writer);
+        date_default_timezone_set("Asia/Calcutta");   
+
+        $_id = $item->getProduct()->getId();
+        
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $product = $objectManager->create('Magento\Catalog\Model\Product')->load($_id);
+
+        // echo $product->getName();
+        // die();
+
+        $connection = $objectManager->get('Magento\Framework\App\ResourceConnection')->getConnection('\Magento\Framework\App\ResourceConnection::DEFAULT_CONNECTION'); 
+
+        $logger->info('Custom message------------------------------------------------------------'.date('h:i a')); 
+        // foreach ($cart_items as $i) {
+        //     $options = $i->getProduct()->getTypeInstance(true)->getOrderOptions($i->getProduct());
+        //     $logger->info(print_r(($options['options'][1]['value']), true));
+        // }
+        
+
+        $option_array = [];
+        
+        $assign_opt = [];
+
+        foreach ($product->getOptions() as $o) {
+            foreach ($o->getValues() as $value) {
+                $searchForValue = '|';
+                $stringValue = $value->getTitle();
+
+                if( strpos($stringValue, $searchForValue) !== false ) {
+                    $res = explode($searchForValue, $stringValue);
+
+                    array_push($assign_opt, $res);
+                    
+                }
+                // array_push($option_array, $value->getTitle());
+            }
+        }
+
+        /* thum url */ 
+        $storeManager = $objectManager->create('Magento\Store\Model\StoreManagerInterface'); 
+        $currentStore = $storeManager->getStore();
+        $mediaUrl = $currentStore->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
+        if ($assign_opt || count($assign_opt) != 0) {
+
+            foreach($assign_opt as $assign_opt_val){
+                $concate =  $assign_opt_val[1].'_'.$assign_opt_val[0].'|'.$assign_opt_val[1];
+            
+                $result1 = $connection->fetchAll("SELECT `image` FROM `wk_osi_variations` WHERE `product_id` = ".$product->getId()." AND `comb` = '".$concate. "' AND `image` != ''");
+
+                
+                
+                // if($result1){
+                    $image_url = $storeManager->getStore()->getBaseUrl().'media/wkosi/products'.$result1[0]['image'];
+                    // break;
+                // }
+            }
+            
+
+        } else {
+            $image_url = null;
+        }
+        
+        if($image_url || $image_url != null || !empty($image_url)){
+            $result->setImageUrl($image_url);
+        }
+        return $result;
+    }
+}
